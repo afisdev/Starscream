@@ -398,6 +398,13 @@ open class WebSocket : NSObject, StreamDelegate {
         CFStreamCreatePairWithSocketToHost(nil, h, UInt32(port), &readStream, &writeStream)
         inputStream = readStream!.takeRetainedValue()
         outputStream = writeStream!.takeRetainedValue()
+        
+        let proxyDict = CFNetworkCopySystemProxySettings()
+        let socksConfig = CFDictionaryCreateMutableCopy(nil, 0, proxyDict!.takeRetainedValue());
+        
+        CFWriteStreamSetProperty(outputStream, CFStreamPropertyKey(rawValue: kCFStreamPropertySOCKSProxy), socksConfig);
+        CFReadStreamSetProperty(inputStream, CFStreamPropertyKey(rawValue: kCFStreamPropertySOCKSProxy), socksConfig);
+        
         guard let inStream = inputStream, let outStream = outputStream else { return }
         inStream.delegate = self
         outStream.delegate = self
